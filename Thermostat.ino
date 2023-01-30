@@ -1,10 +1,16 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <math.h>
+
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
 #include "button.h"
 #include "led.h"
 
-#include <math.h>
 
 #define DHTTYPE DHT11
 #define DHTPIN D2
@@ -65,8 +71,8 @@ int counter = 0;
 
 char printBuffer[PRINT_BUFFER_LEN] = {};
 
-void printRes(const int pin, const int adcVal);
-void readDht();
+float printRes(const int pin, const int adcVal);
+float readDht();
 
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -75,6 +81,7 @@ Button* button1;
 Button* button2;
 Led* led1;
 Led* ledBuiltin;
+LiquidCrystal_I2C* lcd;
 
 void setup() {
   Serial.begin(115200);
@@ -87,7 +94,14 @@ void setup() {
   led1 = new Led("L1", D9, HIGH);
   ledBuiltin->off();
   led1->on();
- }
+  lcd = new LiquidCrystal_I2C(0x27, 16, 2);
+  lcd->init();
+  lcd->backlight();
+  lcd->clear();
+  lcd->print("Tistor: ");
+  lcd->setCursor(0, 1);
+  lcd->print("DHT11:  ");
+}
 
 void loop() {
   memset(printBuffer, 0, PRINT_BUFFER_LEN);
@@ -97,25 +111,36 @@ void loop() {
   ledBuiltin->toggle();
   led1->toggle();
 
-  printRes(0, analogRead(A0));
+  float tTemp = printRes(0, analogRead(A0));
   printRes(1, analogRead(A1));
-  readDht();
+  float dTemp = readDht();
   printButtonState(button1);
   printButtonState(button2);
 
   Serial.println();
 
+  memset(printBuffer, 0, sizeof(printBuffer));
+  sprintf(printBuffer, "%.1f C", tTemp);
+  lcd->setCursor(8, 0);
+  lcd->print(printBuffer);
+
+  if (dTemp > 0.0) {
+    memset(printBuffer, 0, sizeof(printBuffer));
+    sprintf(printBuffer, "%.1f C", dTemp);
+    lcd->setCursor(8, 1);
+    lcd->print(printBuffer);
+  }
   delay(1000);
 }
 
-void printButtonState(Button* b){
+void printButtonState(Button* b) {
   Serial.print("Button ");
   Serial.print(b->name());
   Serial.print(": ");
-  Serial.println(b->pressed()?"PRESSED":"NOT PRESSED");
+  Serial.println(b->pressed() ? "PRESSED" : "NOT PRESSED");
 }
 
-void printRes(const int pin, const int adcVal) {
+float printRes(const int pin, const int adcVal) {
   float V = (float)adcVal / ADC_MAX * ADC_V_MAX;
   float i = (VCC - V) / coefs[pin].rDivider;
   float R = V / i;
@@ -127,9 +152,10 @@ void printRes(const int pin, const int adcVal) {
   memset(printBuffer, 0, sizeof(printBuffer));
   sprintf(printBuffer, "%s: adcVal=%d, ADC_MAX=%.1f, VCC=%.1f, V=%.1f, i=%f, R=%.3f, T=%.2f, BetaTemp=%.2f", coefs[pin].name, adcVal, ADC_MAX, VCC, V, i, R, T, BetaTemp);
   Serial.println(printBuffer);
+  return T;
 }
 
-void readDht() {
+float readDht() {
   // Wait a few seconds between measurements.
   delay(2000);
 
@@ -144,7 +170,7 @@ void readDht() {
   // Check if any reads failed and exit early (to try again).
   if (isnan(h) || isnan(t) || isnan(f)) {
     Serial.println(F("Failed to read from DHT sensor!"));
-    return;
+    return -1.0;
   }
 
   // Compute heat index in Fahrenheit (the default)
@@ -163,5 +189,5 @@ void readDht() {
   Serial.print(F("°C "));
   Serial.print(hif);
   Serial.println(F("°F"));
+  return t;
 }
-
