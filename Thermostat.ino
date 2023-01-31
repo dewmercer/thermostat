@@ -1,3 +1,5 @@
+#include <ArduinoBLE.h>
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <math.h>
@@ -73,6 +75,7 @@ char printBuffer[PRINT_BUFFER_LEN] = {};
 
 float printRes(const int pin, const int adcVal);
 float readDht();
+BLEService* ble;
 
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -98,9 +101,9 @@ void setup() {
   lcd->init();
   lcd->backlight();
   lcd->clear();
-  lcd->print("Tistor: ");
+  lcd->print("tTmp: ");
   lcd->setCursor(0, 1);
-  lcd->print("DHT11:  ");
+  lcd->print("DHT11:");
 }
 
 void loop() {
@@ -111,8 +114,8 @@ void loop() {
   ledBuiltin->toggle();
   led1->toggle();
 
-  float tTemp = printRes(0, analogRead(A0));
-  printRes(1, analogRead(A1));
+  float tTmp1 = printRes(0, analogRead(A0));
+  float tTmp2 = printRes(1, analogRead(A1));
   float dTemp = readDht();
   printButtonState(button1);
   printButtonState(button2);
@@ -120,15 +123,17 @@ void loop() {
   Serial.println();
 
   memset(printBuffer, 0, sizeof(printBuffer));
-  sprintf(printBuffer, "%.1f C", tTemp);
-  lcd->setCursor(8, 0);
+  sprintf(printBuffer, "%.1f %.1f", tTmp1, tTmp2);
+  lcd->setCursor(7, 0);
   lcd->print(printBuffer);
 
+  lcd->setCursor(7, 1);
   if (dTemp > 0.0) {
     memset(printBuffer, 0, sizeof(printBuffer));
-    sprintf(printBuffer, "%.1f C", dTemp);
-    lcd->setCursor(8, 1);
+    sprintf(printBuffer, "%.1f", dTemp);
     lcd->print(printBuffer);
+  } else {
+    lcd->print("Read Err");
   }
   delay(1000);
 }
