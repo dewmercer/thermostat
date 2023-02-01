@@ -1,5 +1,6 @@
 #include <ArduinoBLE.h>
 
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <math.h>
@@ -18,7 +19,6 @@
 #define DHTPIN D2
 
 #define PRINT_BUFFER_LEN 1024
-#define debug Serial
 
 // 12 bits of ADC Resolution
 #define ADC_BITS 12
@@ -75,7 +75,10 @@ char printBuffer[PRINT_BUFFER_LEN] = {};
 
 float printRes(const int pin, const int adcVal);
 float readDht();
-BLEService* ble;
+
+void blePeripheralConnectHandler(BLEDevice central);
+void blePeripheralDisconnectHandler(BLEDevice central);
+void switchCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic);
 
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -86,17 +89,26 @@ Led* led1;
 Led* ledBuiltin;
 LiquidCrystal_I2C* lcd;
 
+BLEService* tempService;
+BLEShortCharacteristic* tTempCharacteristic1;
+BLEShortCharacteristic* dht11TempCharacteristic;
+BLEShortCharacteristic* writeableCharacteristic;
+
 void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
   analogReadResolution(ADC_BITS);
+
   dht.begin();
+
   button1 = new Button("B1", D7, HIGH, 10);
   button2 = new Button("B2", D8, HIGH, 10);
+
   ledBuiltin = new Led("Builtin", LED_BUILTIN, LOW);
   led1 = new Led("L1", D9, HIGH);
   ledBuiltin->off();
   led1->on();
+
   lcd = new LiquidCrystal_I2C(0x27, 16, 2);
   lcd->init();
   lcd->backlight();
@@ -104,6 +116,34 @@ void setup() {
   lcd->print("tTmp: ");
   lcd->setCursor(0, 1);
   lcd->print("DHT11:");
+
+  if (!BLE.begin()) {
+    Serial.println("starting Bluetooth® Low Energy module failed!");
+  }
+
+  tempService = new BLEService("181A");
+  BLE.setLocalName("Thermostat");
+  BLE.setDeviceName("XIAO nRF52840");
+
+  tTempCharacteristic1 = new BLEShortCharacteristic("2A1F", BLERead | BLENotify);
+  tTempCharacteristic1->writeValue(int16_t(0));
+  tempService->addCharacteristic(*tTempCharacteristic1);
+
+  dht11TempCharacteristic = new BLEShortCharacteristic("2A6E", BLERead);
+  dht11TempCharacteristic->writeValue(int16_t(0));
+  tempService->addCharacteristic(*dht11TempCharacteristic);
+
+  writeableCharacteristic = new BLEShortCharacteristic("68CBCB35-97CA-4690-ABB4-027E6F4B05D9", BLERead|BLEWrite);
+  writeableCharacteristic->writeValue(int16_t(0));
+  writeableCharacteristic->setEventHandler(BLEWritten, switchCharacteristicWritten);
+  tempService->addCharacteristic(*writeableCharacteristic);
+  
+  BLE.addService(*tempService);
+  BLE.setEventHandler(BLEConnected, blePeripheralConnectHandler);
+  BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
+
+
+  BLE.advertise();
 }
 
 void loop() {
@@ -111,16 +151,29 @@ void loop() {
   sprintf(printBuffer, "Sample: %d", ++counter);
   Serial.println(printBuffer);
 
+  BLEDevice central = BLE.central();
+  if (central) {
+    Serial.print("Connected to central: ");
+    Serial.println(central.address());
+  } else {
+    Serial.println("Central not connected.");
+  }
+
   ledBuiltin->toggle();
   led1->toggle();
 
   float tTmp1 = printRes(0, analogRead(A0));
   float tTmp2 = printRes(1, analogRead(A1));
-  float dTemp = readDht();
+  float dht11Temp = readDht();
   printButtonState(button1);
   printButtonState(button2);
-
   Serial.println();
+
+  if (central.connected()) {
+    tTempCharacteristic1->writeValue(int16_t(tTmp1));
+    //tTempCharacteristic2->writeValue(int16_t(tTmp2));
+    dht11TempCharacteristic->writeValue(int16_t(dht11Temp));
+  }
 
   memset(printBuffer, 0, sizeof(printBuffer));
   sprintf(printBuffer, "%.1f %.1f", tTmp1, tTmp2);
@@ -128,9 +181,9 @@ void loop() {
   lcd->print(printBuffer);
 
   lcd->setCursor(7, 1);
-  if (dTemp > 0.0) {
+  if (dht11Temp > 0.0) {
     memset(printBuffer, 0, sizeof(printBuffer));
-    sprintf(printBuffer, "%.1f", dTemp);
+    sprintf(printBuffer, "%.1f", dht11Temp);
     lcd->print(printBuffer);
   } else {
     lcd->print("Read Err");
@@ -195,4 +248,37 @@ float readDht() {
   Serial.print(hif);
   Serial.println(F("°F"));
   return t;
+}
+
+void blePeripheralConnectHandler(BLEDevice central) {
+  // central connected event handler
+  Serial.print("Connected event, central: ");
+  Serial.println(central.address());
+}
+
+void blePeripheralDisconnectHandler(BLEDevice central) {
+  // central disconnected event handler
+  Serial.print("Disconnected event, central: ");
+  Serial.println(central.address());
+}
+
+void switchCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic) {
+  
+  Serial.print("Characteristic written for: ");
+  Serial.print(characteristic.uuid());
+  Serial.print(", value: ");
+  uint16_t foo = *characteristic.value() ;
+  Serial.print(foo);
+  Serial.println();
+
+  // central wrote new value to characteristic, update LED
+  //  Serial.print("Characteristic event, written: ");
+
+  //  if (switchCharacteristic.value()) {
+  //    Serial.println("LED on");
+  //    digitalWrite(ledPin, HIGH);
+  //  } else {
+  //    Serial.println("LED off");
+  //    digitalWrite(ledPin, LOW);
+  //  }
 }
