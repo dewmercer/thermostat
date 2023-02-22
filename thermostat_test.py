@@ -6,9 +6,9 @@ import ttfw_idf
 
 
 @ttfw_idf.idf_example_test(env_tag='Example_GENERIC', target=['esp32', 'esp32s2', 'esp32c3'], ci_target=['esp32'])
-def test_examples_hello_world(env, extra_data):
-    app_name = 'hello_world'
-    dut = env.get_dut(app_name, 'examples/get-started/hello_world')
+def thermostat(env, extra_data):
+    app_name = 'thermostat'
+    dut = env.get_dut(app_name, 'thermostat')
     dut.start_app()
     res = dut.expect(ttfw_idf.MINIMUM_FREE_HEAP_SIZE_RE)
     if not res:
@@ -17,4 +17,4 @@ def test_examples_hello_world(env, extra_data):
 
 
 if __name__ == '__main__':
-    test_examples_hello_world()
+    thermostat()
