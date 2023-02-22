@@ -2,6 +2,7 @@
 
 #include <map>
 #include <mutex>
+#include <inttypes.h>
 
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
@@ -30,16 +31,25 @@ public:
   friend class Button;
 
 private:
-  static void IRAM_ATTR ButtonIsr(ISRServiceable *button)
+  static void IRAM_ATTR ButtonIsr(ISRServiceable *obj)
   {
-    ESP_DRAM_LOGD(ISR_TAG, "Enter");
-    if (button->lastServiced() + DEBOUNCE_TIME <= esp_timer_get_time())
+    auto button = dynamic_cast<Button *>(obj);
+    ESP_DRAM_LOGI(ISR_TAG, "Enter");
+    ESP_DRAM_LOGI(ISR_TAG, "DEBOUNCE_TIME %" PRId64, DEBOUNCE_TIME);
+    ESP_DRAM_LOGI(ISR_TAG, "esp_timer_get_time %" PRId64, esp_timer_get_time());
+    ESP_DRAM_LOGI(ISR_TAG, "lastServiced %" PRId64, button->lastServiced());
+    ESP_DRAM_LOGI(ISR_TAG, "lastServiced + DEBOUNCE_TIME %" PRId64, button->lastServiced() + DEBOUNCE_TIME);
+    auto l = (button->lastServiced() + DEBOUNCE_TIME) <= esp_timer_get_time();
+    ESP_DRAM_LOGI(ISR_TAG, "(lastServiced + DEBOUNCE_TIME) <= esp_timer_get_time() %d", l);
+    if ((button->lastServiced() + DEBOUNCE_TIME) <= esp_timer_get_time())
     {
+      ESP_DRAM_LOGI(ISR_TAG, "testing bounce");
       button->lastServiced(esp_timer_get_time());
-      button->service();
-      ESP_DRAM_LOGI(ISR_TAG, "No Bounce pin: %d", static_cast<Button*>(button)->_pin);
+      ESP_DRAM_LOGI(ISR_TAG, "before serviceFromISR");
+      ISRServiceable::serviceFromISR(button);
+      ESP_DRAM_LOGI(ISR_TAG, "No Bounce pin: %d", static_cast<Button *>(button)->_pin);
     }
-    ESP_DRAM_LOGD(ISR_TAG, "Exit");
+    ESP_DRAM_LOGI(ISR_TAG, "Exit");
   }
 
   static void ButtonActionHandler(void *arg)
@@ -77,6 +87,7 @@ Button::Button(thermostat_component_id_t id, gpio_num_t pin, uint8_t pressedStat
   ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_set_pull_mode(pin, pullMode));
 
   ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_isr_handler_add(pin, (void (*)(void *))ButtonISRHandlers::ButtonIsr, (void *)this));
+  ESP_LOGI(BUTTON_TAG, "_lastServicedTime %lu", _lastServicedTime);
 }
 
 Button::~Button()

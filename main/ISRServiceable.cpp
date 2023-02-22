@@ -1,21 +1,26 @@
 #include "ISRServiceable.hpp"
 
+#include <inttypes.h>
+#include "esp_log.h"
+
+static const char *ISRServiceable_TAG = "ISRServiceable";
+
 ISRServiceable::ISRServiceable(const QueueHandle_t serviceQueue)
-    : isrServiceQueue(serviceQueue),
-      lastServicedTime(0)
+    : _isrServiceQueue(serviceQueue),
+      _lastServicedTime(0)
 {
 }
 ISRServiceable::~ISRServiceable(){};
 
 int64_t ISRServiceable::lastServiced() const
 {
-    return lastServicedTime;
+    return _lastServicedTime;
 }
 void ISRServiceable::lastServiced(const int64_t lastServiced)
 {
-    lastServicedTime = lastServiced;
+    _lastServicedTime = lastServiced;
 }
-void ISRServiceable::service() const
+void IRAM_ATTR ISRServiceable::serviceFromISR(ISRServiceable *obj)
 {
-    xQueueSendFromISR(isrServiceQueue, this, NULL);
+    xQueueSendFromISR(obj->_isrServiceQueue, &obj, NULL);
 }

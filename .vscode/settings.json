@@ -1,8 +1,46 @@
 {
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
+    "files.associations": {
+        "stdio.h": "c",
+        "*.tcc": "cpp",
+        "list": "cpp",
+        "thread": "cpp",
+        "unordered_map": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "numeric": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "ratio": "cpp",
+        "system_error": "cpp",
+        "functional": "cpp",
+        "regex": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "deque": "cpp",
+        "vector": "cpp",
+        "bitset": "cpp",
+        "initializer_list": "cpp",
+        "exception": "cpp",
+        "memory_resource": "cpp",
+        "iosfwd": "cpp",
+        "new": "cpp",
+        "stop_token": "cpp",
+        "streambuf": "cpp",
+        "glcdfont.c": "cpp",
+        "semphr.h": "c"
+    },
     "idf.adapterTargetName": "esp32c3",
     "idf.port": "/dev/cu.usbmodem212101",
     "idf.flashType": "JTAG",
     "idf.openOcdConfigs": [
         "board/esp32c3-builtin.cfg"
-    ]
+    ],
+    "idf.port": "/dev/cu.usbmodem212101",
+    "idf.flashType": "JTAG",
+    "C_Cpp.intelliSenseEngineFallback": "disabled"
 }
