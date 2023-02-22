@@ -1,0 +1,12 @@
+idf_component_register(SRCS "main.cpp"
+    "Adc.cpp"
+    # "AM2320.cpp"
+    "Button.cpp"
+    "Component.cpp"
+    "I2C.cpp"
+    "ISRServiceable.cpp"
+    "Led.cpp"
+    "LiquidCrystal_I2C.cpp"
+    "Print.cpp"
+    "Thermistor.cpp"
+    INCLUDE_DIRS ".")
