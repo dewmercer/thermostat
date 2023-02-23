@@ -99,10 +99,10 @@ extern "C" void app_main(void)
     Led led(SANITY_LED, GPIO_NUM_9);
     led.on();
 
-    //Button b8(BUTTON_0, GPIO_NUM_8, 0, buttonHandler8);
-    //ESP_LOGI(APP_MAIN_TAG, "Button B8 constructed");
+    Button b8(BUTTON_0, GPIO_NUM_6, 1, buttonHandler8);
+    ESP_LOGI(APP_MAIN_TAG, "Button B8 constructed");
 
-    Button b20(BUTTON_1, GPIO_NUM_20, 0, button1Handler);
+    Button b20(BUTTON_1, GPIO_NUM_7, 0, button1Handler);
     ESP_LOGI(APP_MAIN_TAG, "Button B20 constructed");
 
     //lcd.backlight();
