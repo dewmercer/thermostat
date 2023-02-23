@@ -136,7 +136,6 @@ extern "C" void app_main(void)
         // ESP_LOGI(APP_MAIN_TAG, "yAdvance %" PRIu8 ", x: %" PRIu16 ", y: %" PRIu16, pFont->yAdvance, tft->getCursorX(), tft->getCursorY());
         tft->fillRect(tft->getCursorX(), tft->getCursorY() - h + 2, 127 - tft->getCursorX(), h, BLACK);
         tft->printf("%.1f", temp3);
-
         //lcd.setCursor(0, 0);
         //lcd.printf("Temp2: %.1f", temp2);
         //auto temp3 = t3.getTemperature();
