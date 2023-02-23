@@ -8,6 +8,8 @@
             "includePath": [
                 "${config:idf.espIdfPath}/components",
                 "${config:idf.espIdfPath}/components/**",
+                "${config:idf.espIdfPath}/managed_components",
+                "${config:idf.espIdfPath}/managed_components/**",
                 "${workspaceFolder}",
                 "${workspaceFolder}/**"
             ],
@@ -15,6 +17,8 @@
                 "path": [
                     "${config:idf.espIdfPath}/components",
                     "${config:idf.espIdfPath}/components/**",
+                    "${config:idf.espIdfPath}/managed_components",
+                    "${config:idf.espIdfPath}/managed_components/**",
                     "${workspaceFolder}",
                     "${workspaceFolder}/**"
                 ],

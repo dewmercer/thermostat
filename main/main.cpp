@@ -27,10 +27,10 @@
 #include "esp_log.h"
 #include "driver/gpio.h"
 
+#include "Adafruit_GFX.h"
 #include "Adafruit_SSD1351.h"
 // #include "AM2320.hpp"
 
-// #include "Adafruit_GFX.h"
 
 #ifdef __GNUC__
 #define USED __attribute__((used))
@@ -42,7 +42,7 @@ const int USED uxTopUsedPriority = configMAX_PRIORITIES - 1;
 
 #define GPIO_INPUT_IO_8 (gpio_num_t)8
 #define GPIO_INPUT_IO_20 (gpio_num_t)20
-#define GPIO_LED (gpio_num_t)9
+#define GPIO_LED (gpio_num_t)20
 
 static const char *APP_MAIN_TAG = "APP_MAIN";
 static const char *BUTTON_HANDLER_TAG = "BUTTON_HANDLER_MAIN";
@@ -54,7 +54,7 @@ static void buttonHandler8(Button *button)
 }
 
 static int counter20 = 0;
-static void buttonHandler20(Button *button)
+static void button1Handler(Button *button)
 {
     ESP_LOGI(BUTTON_HANDLER_TAG, "Handeling button id: %u, %d", button->id(), ++counter20);
 }
@@ -77,6 +77,8 @@ static void buttonHandler20(Button *button)
 #define YELLOW 0xFFE0
 #define WHITE 0xFFFF
 
+#include "Fonts/FreeSerifBoldItalic9pt7b.h"
+
 void lcdTestPattern(void);
 Adafruit_SSD1351 *tft;
 
@@ -86,30 +88,54 @@ extern "C" void app_main(void)
 
     tft->begin();
 
+    tft->fillScreen(BLACK);
     // auto lcd = LiquidCrystal_I2C(0x27, 2, 16);
 
     auto adc2 = new Adc(ADC_0, ADC1_CHANNEL_2);
     Thermistor t2(THERMISTOR_10K, knownThermistorConfigs["10K"], adc2);
-    //auto adc3 = new Adc(ADC_1, ADC1_CHANNEL_3);
-    //Thermistor t3(THERMISTOR_100K, knownThermistorConfigs["100K"], adc3);
+    auto adc3 = new Adc(ADC_1, ADC1_CHANNEL_3);
+    Thermistor t3(THERMISTOR_100K, knownThermistorConfigs["100K"], adc3);
 
-    //Led led(SANITY_LED, GPIO_LED);
+    Led led(SANITY_LED, GPIO_LED);
 
     //Button b8(BUTTON_0, GPIO_NUM_8, 0, buttonHandler8);
     //ESP_LOGI(APP_MAIN_TAG, "Button B8 constructed");
 
-    //Button b20(BUTTON_1, GPIO_NUM_20, 1, buttonHandler20);
-    //ESP_LOGI(APP_MAIN_TAG, "Button B20 constructed");
+    Button b20(BUTTON_1, GPIO_NUM_9, 0, button1Handler);
+    ESP_LOGI(APP_MAIN_TAG, "Button B20 constructed");
 
     //lcd.backlight();
     //lcd.clear();
 
+    auto pFont = &FreeSerifBoldItalic9pt7b;
+    tft->setFont(pFont);
+
+    int16_t x, y;
+    uint16_t w, h;
+
+    tft->getTextBounds("Temp3: ", 0, 20, &x, &y, &w, &h);
+    ESP_LOGI(APP_MAIN_TAG, "x: %" PRIu16 ", y: %" PRIu16 ", w: %" PRIu16 ", h: %" PRIu16, x, y, w, h);
     while (1)
     {
-        tft->fillRect(0, 0, 128, 128, BLACK);
-        lcdTestPattern();
-        delay(500);
-        //auto temp2 = t2.getTemperature();
+        auto temp2 = t2.getTemperature();
+        tft->setCursor(0, pFont->yAdvance);
+        tft->setTextColor(RED);
+        tft->printf("Temp2: ");
+        //% .1f ", temp2);
+        //ESP_LOGI(APP_MAIN_TAG, "yAdvance %" PRIu8 ", x: %" PRIu16 ", y: %" PRIu16, pFont->yAdvance, tft->getCursorX(), tft->getCursorY());
+        tft->fillRect(tft->getCursorX(), tft->getCursorY() - h + 2, 127 - tft->getCursorX(), h, BLACK);
+        tft->printf("%.1f", temp2);
+
+        
+        auto temp3 = t3.getTemperature();
+        tft->setCursor(0, 2 * pFont->yAdvance + 1);
+        tft->setTextColor(GREEN);
+        tft->printf("Temp3: ");
+        //% .1f ", temp2);
+        // ESP_LOGI(APP_MAIN_TAG, "yAdvance %" PRIu8 ", x: %" PRIu16 ", y: %" PRIu16, pFont->yAdvance, tft->getCursorX(), tft->getCursorY());
+        tft->fillRect(tft->getCursorX(), tft->getCursorY() - h + 2, 127 - tft->getCursorX(), h, BLACK);
+        tft->printf("%.1f", temp3);
+
         //lcd.setCursor(0, 0);
         //lcd.printf("Temp2: %.1f", temp2);
         //auto temp3 = t3.getTemperature();
@@ -119,7 +145,7 @@ extern "C" void app_main(void)
         // auto am2320Temp = am2320->temperature();
         // ESP_LOGI(APP_MAIN_TAG, "AM2320: %d", am2320Temp);
         // vTaskDelay(1000 / portTICK_PERIOD_MS);
-        //led.flashNTimes(2, 100);
+        led.flashNTimes(2, 100);
     }
 }
 
