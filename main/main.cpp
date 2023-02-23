@@ -18,9 +18,9 @@
 #include "Adc.hpp"
 #include "Button.hpp"
 #include "Component.hpp"
-#include "LiquidCrystal_I2C.hpp"
+//#include "LiquidCrystal_I2C.hpp"
 #include "Led.hpp"
-#include "Print.h"
+//#include "Print.h"
 #include "Thermistor.hpp"
 #include "ThermistorConfig.hpp"
 
@@ -42,7 +42,7 @@ const int USED uxTopUsedPriority = configMAX_PRIORITIES - 1;
 
 #define GPIO_INPUT_IO_8 (gpio_num_t)8
 #define GPIO_INPUT_IO_20 (gpio_num_t)20
-#define GPIO_LED (gpio_num_t)20
+#define GPIO_LED (gpio_num_t)6
 
 static const char *APP_MAIN_TAG = "APP_MAIN";
 static const char *BUTTON_HANDLER_TAG = "BUTTON_HANDLER_MAIN";
@@ -96,12 +96,13 @@ extern "C" void app_main(void)
     auto adc3 = new Adc(ADC_1, ADC1_CHANNEL_3);
     Thermistor t3(THERMISTOR_100K, knownThermistorConfigs["100K"], adc3);
 
-    Led led(SANITY_LED, GPIO_LED);
+    Led led(SANITY_LED, GPIO_NUM_9);
+    led.on();
 
     //Button b8(BUTTON_0, GPIO_NUM_8, 0, buttonHandler8);
     //ESP_LOGI(APP_MAIN_TAG, "Button B8 constructed");
 
-    Button b20(BUTTON_1, GPIO_NUM_9, 0, button1Handler);
+    Button b20(BUTTON_1, GPIO_NUM_20, 0, button1Handler);
     ESP_LOGI(APP_MAIN_TAG, "Button B20 constructed");
 
     //lcd.backlight();
