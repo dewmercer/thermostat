@@ -19,11 +19,10 @@
 // 150ms
 #define DEBOUNCE_TIME (uint64_t)150000
 
-static QueueHandle_t __button_isr_event_queue = NULL;
-static SemaphoreHandle_t __button_container_semaphore = NULL;
+static QueueHandle_t __button_isr_event_queue = nullptr;
 
 static const char *ISR_TAG = "Button ButtonIsr";
-static const char *BUTTON_ACTION_HANDLER_TAG_TAG = "ButtonActionHandler";
+static const char *BUTTON_ACTION_HANDLER_TAG = "ButtonActionHandler";
 
 class ButtonISRHandlers
 {
@@ -31,37 +30,25 @@ public:
   friend class Button;
 
 private:
-  static void IRAM_ATTR ButtonIsr(ISRServiceable *obj)
+  static void IRAM_ATTR ButtonIsr(Button *button)
   {
-    auto button = dynamic_cast<Button *>(obj);
-    ESP_DRAM_LOGI(ISR_TAG, "Enter");
-    ESP_DRAM_LOGI(ISR_TAG, "DEBOUNCE_TIME %" PRId64, DEBOUNCE_TIME);
-    ESP_DRAM_LOGI(ISR_TAG, "esp_timer_get_time %" PRId64, esp_timer_get_time());
-    ESP_DRAM_LOGI(ISR_TAG, "lastServiced %" PRId64, button->lastServiced());
-    ESP_DRAM_LOGI(ISR_TAG, "lastServiced + DEBOUNCE_TIME %" PRId64, button->lastServiced() + DEBOUNCE_TIME);
-    auto l = (button->lastServiced() + DEBOUNCE_TIME) <= esp_timer_get_time();
-    ESP_DRAM_LOGI(ISR_TAG, "(lastServiced + DEBOUNCE_TIME) <= esp_timer_get_time() %d", l);
-    if ((button->lastServiced() + DEBOUNCE_TIME) <= esp_timer_get_time())
-    {
-      ESP_DRAM_LOGI(ISR_TAG, "testing bounce");
-      button->lastServiced(esp_timer_get_time());
-      ESP_DRAM_LOGI(ISR_TAG, "before serviceFromISR");
-      ISRServiceable::serviceFromISR(button);
-      ESP_DRAM_LOGI(ISR_TAG, "No Bounce pin: %d", static_cast<Button *>(button)->_pin);
-    }
-    ESP_DRAM_LOGI(ISR_TAG, "Exit");
+    xQueueSendFromISR(__button_isr_event_queue, &button, NULL);
   }
 
   static void ButtonActionHandler(void *arg)
   {
-    ESP_LOGI(BUTTON_ACTION_HANDLER_TAG_TAG, "dispatcher running");
+    ESP_LOGI(BUTTON_ACTION_HANDLER_TAG, "dispatcher running");
     for (;;)
     {
-      ESP_LOGD(BUTTON_ACTION_HANDLER_TAG_TAG, "WAITING");
+      ESP_LOGD(BUTTON_ACTION_HANDLER_TAG, "WAITING");
       Button *button;
       if (xQueueReceive(__button_isr_event_queue, &button, portMAX_DELAY))
       {
-        button->_handler(button);
+        if ((button->getLastServiced() + DEBOUNCE_TIME) <= esp_timer_get_time())
+        {
+          button->setLastServiced(esp_timer_get_time());
+          button->_handler((Button *)button);
+        }
       }
     }
   }
@@ -73,21 +60,20 @@ static SemaphoreHandle_t __button_isr_initialization_mutex = xSemaphoreCreateMut
 
 Button::Button(thermostat_component_id_t id, gpio_num_t pin, uint8_t pressedState, pButtonHandler handler)
     : Component(id),
-      ISRServiceable(__button_isr_event_queue),
+      ISRServiceable(),
       _pin(pin),
       _pressedState(pressedState),
       _handler(handler)
 {
   __init_buttons();
-
   gpio_int_type_t interruptType = pressedState == 1 ? GPIO_INTR_POSEDGE : GPIO_INTR_NEGEDGE;
   ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_set_intr_type(pin, interruptType));
 
   gpio_pull_mode_t pullMode = pressedState == 1 ? GPIO_PULLDOWN_ONLY : GPIO_PULLUP_ONLY;
   ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_set_pull_mode(pin, pullMode));
 
-  ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_isr_handler_add(pin, (void (*)(void *))ButtonISRHandlers::ButtonIsr, (void *)this));
-  ESP_LOGI(BUTTON_TAG, "_lastServicedTime %lu", _lastServicedTime);
+  ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_isr_handler_add(pin, (gpio_isr_t)ButtonISRHandlers::ButtonIsr, (void *)this));
+  ESP_LOGI(BUTTON_TAG, "_lastServicedTime %" PRId64, _lastServicedTime);
 }
 
 Button::~Button()
@@ -108,7 +94,6 @@ void Button::__init_buttons()
     if (!__button_isr_initialized)
     {
       ESP_LOGI(BUTTON_TAG, "initializing");
-      __button_container_semaphore = xSemaphoreCreateMutex();
       __button_isr_event_queue = xQueueCreate(10, sizeof(Button *));
       xTaskCreate(ButtonISRHandlers::ButtonActionHandler, "ButtonActionHandler", 2048, NULL, 10, NULL);
       ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_install_isr_service(0));
@@ -117,4 +102,4 @@ void Button::__init_buttons()
     }
     xSemaphoreGive(__button_isr_initialization_mutex);
   }
-}
+};

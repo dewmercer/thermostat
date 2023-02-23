@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Component.hpp"
-#include "Print.hpp"
+#include "Print.h"
 #include "I2C.hpp"
 
 #define LCD_5x8DOTS 0x00

@@ -20,13 +20,14 @@
 #include "Component.hpp"
 #include "LiquidCrystal_I2C.hpp"
 #include "Led.hpp"
-#include "Print.hpp"
+#include "Print.h"
 #include "Thermistor.hpp"
 #include "ThermistorConfig.hpp"
 
 #include "esp_log.h"
 #include "driver/gpio.h"
 
+#include "Adafruit_SSD1351.h"
 // #include "AM2320.hpp"
 
 // #include "Adafruit_GFX.h"
@@ -58,42 +59,78 @@ static void buttonHandler20(Button *button)
     ESP_LOGI(BUTTON_HANDLER_TAG, "Handeling button id: %u, %d", button->id(), ++counter20);
 }
 
-extern "C" void
-app_main(void)
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 128
+
+#define SCLK_PIN 8
+#define MOSI_PIN 10
+#define DC_PIN 5
+#define CS_PIN 21
+#define RST_PIN 4
+
+#define BLACK 0x0000
+#define BLUE 0x001F
+#define RED 0xF800
+#define GREEN 0x07E0
+#define CYAN 0x07FF
+#define MAGENTA 0xF81F
+#define YELLOW 0xFFE0
+#define WHITE 0xFFFF
+
+void lcdTestPattern(void);
+Adafruit_SSD1351 *tft;
+
+extern "C" void app_main(void)
 {
+    tft = new Adafruit_SSD1351(SCREEN_WIDTH, SCREEN_HEIGHT, CS_PIN, DC_PIN, MOSI_PIN, SCLK_PIN, RST_PIN);
 
-    // auto am2320 = new AM2320();
+    tft->begin();
 
-    auto lcd = LiquidCrystal_I2C(0x27, 2, 16);
+    // auto lcd = LiquidCrystal_I2C(0x27, 2, 16);
 
     auto adc2 = new Adc(ADC_0, ADC1_CHANNEL_2);
     Thermistor t2(THERMISTOR_10K, knownThermistorConfigs["10K"], adc2);
-    auto adc3 = new Adc(ADC_1, ADC1_CHANNEL_3);
-    Thermistor t3(THERMISTOR_100K, knownThermistorConfigs["100K"], adc3);
+    //auto adc3 = new Adc(ADC_1, ADC1_CHANNEL_3);
+    //Thermistor t3(THERMISTOR_100K, knownThermistorConfigs["100K"], adc3);
 
-    Led led(SANITY_LED, GPIO_LED);
+    //Led led(SANITY_LED, GPIO_LED);
 
-    Button b8(BUTTON_0, GPIO_NUM_8, 0, buttonHandler8);
-    ESP_LOGI(APP_MAIN_TAG, "Button B8 constructed");
+    //Button b8(BUTTON_0, GPIO_NUM_8, 0, buttonHandler8);
+    //ESP_LOGI(APP_MAIN_TAG, "Button B8 constructed");
 
-    Button b20(BUTTON_1, GPIO_NUM_20, 1, buttonHandler20);
-    ESP_LOGI(APP_MAIN_TAG, "Button B20 constructed");
+    //Button b20(BUTTON_1, GPIO_NUM_20, 1, buttonHandler20);
+    //ESP_LOGI(APP_MAIN_TAG, "Button B20 constructed");
 
-    lcd.backlight();
-    lcd.clear();
+    //lcd.backlight();
+    //lcd.clear();
 
     while (1)
     {
-        auto temp2 = t2.getTemperature();
-        lcd.setCursor(0, 0);
-        lcd.printf("Temp2: %.1f", temp2);
-        auto temp3 = t3.getTemperature();
-        lcd.setCursor(1, 0);
-        lcd.printf("Temp3: %.1f", temp3);
+        tft->fillRect(0, 0, 128, 128, BLACK);
+        lcdTestPattern();
+        delay(500);
+        //auto temp2 = t2.getTemperature();
+        //lcd.setCursor(0, 0);
+        //lcd.printf("Temp2: %.1f", temp2);
+        //auto temp3 = t3.getTemperature();
+        //lcd.setCursor(1, 0);
+        //lcd.printf("Temp3: %.1f", temp3);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         // auto am2320Temp = am2320->temperature();
         // ESP_LOGI(APP_MAIN_TAG, "AM2320: %d", am2320Temp);
         // vTaskDelay(1000 / portTICK_PERIOD_MS);
-        led.flashNTimes(2, 100);
+        //led.flashNTimes(2, 100);
+    }
+}
+
+void lcdTestPattern(void)
+{
+    static const uint16_t PROGMEM colors[] =
+        {RED, YELLOW, GREEN, CYAN, BLUE, MAGENTA, BLACK, WHITE};
+
+    for (uint8_t c = 0; c < 8; c++)
+    {
+        tft->fillRect(0, tft->height() * c / 8, tft->width(), tft->height() / 8,
+                     pgm_read_word(&colors[c]));
     }
 }

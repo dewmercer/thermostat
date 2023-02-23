@@ -7,14 +7,12 @@
 class ISRServiceable
 {
 protected:
-    QueueHandle_t _isrServiceQueue;
     int64_t _lastServicedTime;
 
 public:
-    ISRServiceable(const QueueHandle_t serviceQueue);
+    ISRServiceable();
     virtual ~ISRServiceable();
 
-    int64_t lastServiced() const;
-    void lastServiced(const int64_t lastServiced);
-    static void serviceFromISR(ISRServiceable *obj);
+    int64_t getLastServiced() const;
+    void setLastServiced(const int64_t lastServiced);
 };

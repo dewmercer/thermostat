@@ -7,6 +7,6 @@ idf_component_register(SRCS "main.cpp"
     "ISRServiceable.cpp"
     "Led.cpp"
     "LiquidCrystal_I2C.cpp"
-    "Print.cpp"
+    #"Print.cpp"
     "Thermistor.cpp"
     INCLUDE_DIRS ".")
