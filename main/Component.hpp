@@ -19,6 +19,7 @@ typedef enum
     THERMISTOR_100K,
     SENSOR_AM2320,
     DISPLAY_LCD,
+    DISPLAY_MAIN
 } thermostat_component_id_t;
 
 class Component{
