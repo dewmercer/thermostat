@@ -28,20 +28,22 @@ class Display: public Component{
   protected:
       const display_mode_t mode;
       bool isActive;
-      
+
+      Adafruit_SSD1351 *getDisplay() const;
 
   public:
       Display(const display_mode_t mode);
       virtual ~Display();
 
   public:
-      void makeActive();
-      void makeInactive();
+      virtual void makeActive();
+      virtual void makeInactive();
 
       static void init(gpio_num_t cs_pin,
                        gpio_num_t dc_pin,
                        gpio_num_t mosi_pin,
                        gpio_num_t sclk_pin,
+                       gpio_num_t rst_pin,
                        uint32_t timeoutSeconds);
 
       static Display *getDisplay(const display_mode_t mode);
@@ -56,4 +58,4 @@ class Display: public Component{
       static void off(void *) { off(); };
 };
 
-static Adafruit_SSD1351 *display;
+

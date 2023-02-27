@@ -42,5 +42,5 @@
     ],
     "idf.port": "/dev/cu.usbmodem212101",
     "idf.flashType": "JTAG",
-    "C_Cpp.intelliSenseEngineFallback": "disabled"
+    "C_Cpp.intelliSenseEngineFallback": "enabled"
 }

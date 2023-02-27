@@ -11,7 +11,7 @@
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 128
 
-
+static Adafruit_SSD1351 *display;
 static SemaphoreHandle_t __display_mutex = xSemaphoreCreateMutex();
 static bool __display_initialized = false;
 static std::map<display_mode_t, Display *> modeToDisplayMap;
@@ -20,6 +20,10 @@ static esp_timer_handle_t dimTimer;
 
 #define SLEEP_IN (uint8_t)0xAE
 #define SLEEP_OUT (uint8_t)0xAF
+
+Adafruit_SSD1351 *Display::getDisplay() const{
+    return display;
+}
 
 Display::Display(const display_mode_t mode)
     : Component(DISPLAY_MAIN),
@@ -46,6 +50,7 @@ void Display::init(gpio_num_t cs_pin,
                    gpio_num_t dc_pin,
                    gpio_num_t mosi_pin,
                    gpio_num_t sclk_pin,
+                   gpio_num_t rst_pin,
                    uint32_t timeoutSeconds)
 {
     if (!__display_initialized)
@@ -54,9 +59,8 @@ void Display::init(gpio_num_t cs_pin,
         if (!__display_initialized)
         {
             dimTimeoutSeconds = timeoutSeconds;
-            display = new Adafruit_SSD1351(SCREEN_WIDTH, SCREEN_HEIGHT, (int8_t)cs_pin, (int8_t)dc_pin, (int8_t)mosi_pin, (int8_t)sclk_pin);
+            display = new Adafruit_SSD1351(SCREEN_WIDTH, SCREEN_HEIGHT, (int8_t)cs_pin, (int8_t)dc_pin, (int8_t)mosi_pin, (int8_t)sclk_pin, (int8_t)rst_pin);
             display->begin();
-            off();
 
             esp_timer_create_args_t timerCreateArgs = {
                 .callback = off,
@@ -94,5 +98,4 @@ void Display::on()
 void Display::off()
 {
     display->sendCommand(SLEEP_IN);
-    //display->fillScreen(BLACK);
 }
