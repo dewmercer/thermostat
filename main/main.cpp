@@ -56,10 +56,10 @@ static void buttonHandler8(Button *button)
 }
 
 static int counter20 = 0;
-static void button1Handler(Button *button)
+static void button20Handler(Button *button)
 {
     ESP_LOGI(BUTTON_HANDLER_TAG, "Handeling button id: %u, %d", button->id(), ++counter20);
-    Display::on();
+    Display::off();
 }
 
 #define SCREEN_WIDTH 128
@@ -109,7 +109,7 @@ extern "C" void app_main(void)
     Button b8(BUTTON_0, GPIO_NUM_6, 1, buttonHandler8);
     ESP_LOGI(APP_MAIN_TAG, "Button B8 constructed");
 
-    Button b20(BUTTON_1, GPIO_NUM_7, 0, button1Handler);
+    Button b20(BUTTON_1, GPIO_NUM_7, 0, button20Handler);
     ESP_LOGI(APP_MAIN_TAG, "Button B20 constructed");
 
     //lcd.backlight();

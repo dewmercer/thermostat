@@ -18,6 +18,9 @@ static std::map<display_mode_t, Display *> modeToDisplayMap;
 static uint32_t dimTimeoutSeconds;
 static esp_timer_handle_t dimTimer;
 
+#define SLEEP_IN (uint8_t)0xAE
+#define SLEEP_OUT (uint8_t)0xAF
+
 Display::Display(const display_mode_t mode)
     : Component(DISPLAY_MAIN),
       mode(mode),
@@ -83,11 +86,13 @@ void Display::resetDimTimeout()
 
 void Display::on()
 {
+    display->sendCommand(SLEEP_OUT);
     Display::resetDimTimeout();
     display->fillScreen(WHITE);
 }
 
 void Display::off()
 {
-    display->fillScreen(BLACK);
+    display->sendCommand(SLEEP_IN);
+    //display->fillScreen(BLACK);
 }
