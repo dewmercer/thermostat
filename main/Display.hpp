@@ -16,6 +16,17 @@
 #define YELLOW 0xFFE0
 #define WHITE 0xFFFF
 
+#define ACQUIRE_ACTIVE_SCREEN \
+    if (isActive)             \
+    {                         \
+        acquireScreen();      \
+        if (isActive)         \
+        {
+#define RELEASE_ACTIVE_SCREEN \
+    releaseScreen();   \
+    }                  \
+    }
+
 typedef enum
 {
     MAIN_DISPLAY
@@ -30,6 +41,9 @@ class Display: public Component{
       bool isActive;
 
       Adafruit_SSD1351 *getDisplay() const;
+
+      static void acquireScreen();
+      static void releaseScreen();
 
   public:
       Display(const display_mode_t mode);

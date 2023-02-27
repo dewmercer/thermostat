@@ -55,7 +55,7 @@ void Display::init(gpio_num_t cs_pin,
 {
     if (!__display_initialized)
     {
-        xSemaphoreTake(__display_mutex, portMAX_DELAY);
+        acquireScreen();
         if (!__display_initialized)
         {
             dimTimeoutSeconds = timeoutSeconds;
@@ -73,7 +73,7 @@ void Display::init(gpio_num_t cs_pin,
             ESP_ERROR_CHECK_WITHOUT_ABORT(esp_timer_start_periodic(dimTimer, dimTimeoutSeconds * 1000 * 1000));
             __display_initialized = true;
         }
-        xSemaphoreGive(__display_mutex);
+        releaseScreen();
     }
 }
 
@@ -90,12 +90,23 @@ void Display::resetDimTimeout()
 
 void Display::on()
 {
+    acquireScreen();
     display->sendCommand(SLEEP_OUT);
     Display::resetDimTimeout();
     display->fillScreen(WHITE);
+    releaseScreen();
 }
 
 void Display::off()
 {
+    acquireScreen();
     display->sendCommand(SLEEP_IN);
+    releaseScreen();
+}
+
+void Display::acquireScreen() {
+    xSemaphoreTake(__display_mutex, portMAX_DELAY);
+}
+void Display::releaseScreen() {
+    xSemaphoreGive(__display_mutex);
 }
