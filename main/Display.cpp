@@ -20,6 +20,8 @@ static esp_timer_handle_t dimTimer;
 
 #define SLEEP_IN (uint8_t)0xAE
 #define SLEEP_OUT (uint8_t)0xAF
+#define DISPLAY_ENHANCEMENT (uint8_t)0xB2
+#define ENHANCE_DIAPLAY (uint8_t)0xA4
 
 Adafruit_SSD1351 *Display::getDisplay() const{
     return display;
@@ -61,6 +63,8 @@ void Display::init(gpio_num_t cs_pin,
             dimTimeoutSeconds = timeoutSeconds;
             display = new Adafruit_SSD1351(SCREEN_WIDTH, SCREEN_HEIGHT, (int8_t)cs_pin, (int8_t)dc_pin, (int8_t)mosi_pin, (int8_t)sclk_pin, (int8_t)rst_pin);
             display->begin();
+            uint8_t displayEnhancement[3] = {ENHANCE_DIAPLAY, 0x00, 0x00};
+            display->sendCommand(DISPLAY_ENHANCEMENT, displayEnhancement, sizeof(displayEnhancement));
 
             esp_timer_create_args_t timerCreateArgs = {
                 .callback = off,
