@@ -46,7 +46,7 @@ protected:
     const display_mode_t mode;
     bool isActive;
 
-    Adafruit_SSD1351 *getDisplay() const;
+    static Adafruit_SSD1351 *getDisplay();
 
     static void acquireScreen();
     static void releaseScreen();
@@ -59,9 +59,9 @@ public:
     virtual void makeActive();
     virtual void makeInactive();
 
-    void fillRect(const rectangle rect, const uint16_t color) const;
+    static void fillRect(const rectangle rect, const uint16_t color);
 
-    rectangle getNewBounds(const char * buffer, const int16_t x, const int16_t y) const;
+    static rectangle getNewBounds(const char * buffer, const int16_t x, const int16_t y);
 
     static void init(gpio_num_t cs_pin,
                      gpio_num_t dc_pin,
@@ -80,4 +80,6 @@ public:
 
     static void off();
     static void off(void *) { off(); };
+
+    static void prepForPrint(const int16_t x, const int16_t y, const GFXfont *font, const uint16_t color);
 };

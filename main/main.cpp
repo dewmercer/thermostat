@@ -120,6 +120,8 @@ Adafruit_SSD1351 *tft;
     // tft->getTextBounds("Temp3: ", 0, 20, &x, &y, &w, &h);
     // ESP_LOGI(APP_MAIN_TAG, "x: %" PRIu16 ", y: %" PRIu16 ", w: %" PRIu16 ", h: %" PRIu16, x, y, w, h);
     disp->on();
+
+    int counter = 0;
     while (1)
     {
         auto temp2 = t2.getTemperature();
@@ -131,6 +133,7 @@ Adafruit_SSD1351 *tft;
         // tft->fillRect(tft->getCursorX(), tft->getCursorY() - h + 2, 127 - tft->getCursorX(), h, BLACK);
         // tft->printf("%.1f", temp2);
         disp->writeTemp(temp2);
+        disp->writeSetPoint(counter);
 
         auto temp3 = t3.getTemperature();
         // tft->setCursor(0, 2 * pFont->yAdvance + 1);
@@ -150,7 +153,8 @@ Adafruit_SSD1351 *tft;
         // ESP_LOGI(APP_MAIN_TAG, "AM2320: %d", am2320Temp);
         // vTaskDelay(1000 / portTICK_PERIOD_MS);
         led.flashNTimes(2, 100);
-        }
+        counter = (counter + 1) % 100;
+    }
     }
 
     void lcdTestPattern(void)

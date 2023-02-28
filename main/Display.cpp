@@ -23,7 +23,10 @@ static esp_timer_handle_t dimTimer;
 #define DISPLAY_ENHANCEMENT (uint8_t)0xB2
 #define ENHANCE_DIAPLAY (uint8_t)0xA4
 
-Adafruit_SSD1351 *Display::getDisplay() const{
+static const char *TAG = "Display";
+
+Adafruit_SSD1351 *Display::getDisplay()
+{
     return display;
 }
 
@@ -65,7 +68,7 @@ void Display::init(gpio_num_t cs_pin,
             display->begin();
             uint8_t displayEnhancement[3] = {ENHANCE_DIAPLAY, 0x00, 0x00};
             display->sendCommand(DISPLAY_ENHANCEMENT, displayEnhancement, sizeof(displayEnhancement));
-
+/**
             esp_timer_create_args_t timerCreateArgs = {
                 .callback = off,
                 .arg = NULL,
@@ -75,7 +78,7 @@ void Display::init(gpio_num_t cs_pin,
 
             ESP_ERROR_CHECK_WITHOUT_ABORT(esp_timer_create(&timerCreateArgs, &dimTimer));
             ESP_ERROR_CHECK_WITHOUT_ABORT(esp_timer_start_periodic(dimTimer, dimTimeoutSeconds * 1000 * 1000));
-            __display_initialized = true;
+   */         __display_initialized = true;
         }
         releaseScreen();
     }
@@ -108,19 +111,30 @@ void Display::off()
     releaseScreen();
 }
 
-void Display::acquireScreen() {
+void Display::acquireScreen()
+{
     xSemaphoreTake(__display_mutex, portMAX_DELAY);
 }
-void Display::releaseScreen() {
+void Display::releaseScreen()
+{
     xSemaphoreGive(__display_mutex);
 }
 
-void Display::fillRect(const rectangle rect, const uint16_t color) const {
-    getDisplay()->fillRect(rect.x, rect.y, rect.w, rect.y, color);
+void Display::fillRect(const rectangle rect, const uint16_t color)
+{
+    Display::getDisplay()->fillRect(rect.x, rect.y, rect.w, rect.h, color);
 }
 
-rectangle Display::getNewBounds(const char * buffer, const int16_t x, const int16_t y) const {
+rectangle Display::getNewBounds(const char *buffer, const int16_t x, const int16_t y)
+{
     rectangle newBounds;
-    getDisplay()->getTextBounds(buffer, x, y, &newBounds.x, &newBounds.y, &newBounds.w, &newBounds.h);
+    Display::getDisplay()->getTextBounds(buffer, x, y, &newBounds.x, &newBounds.y, &newBounds.w, &newBounds.h);
     return newBounds;
+}
+
+void Display::prepForPrint(const int16_t x, const int16_t y, const GFXfont *font, const uint16_t color)
+{
+    getDisplay()->setTextColor(color);
+    getDisplay()->setFont(font);
+    getDisplay()->setCursor(x, y);
 }

@@ -8,12 +8,14 @@ class MainDisplay: public Display{
         rectangle rectCurrentTemp;
         rectangle rectSetPoint;
 
-    public:
-        MainDisplay();
-        ~MainDisplay();
+        public:
+            MainDisplay();
+            ~MainDisplay();
 
-        virtual void makeActive();
-        virtual void makeInactive();
+            virtual void makeActive();
+            virtual void makeInactive();
 
-        void writeTemp(const float temp);
+            void writeTemp(const float temp);
+
+            void writeSetPoint(const int setpoint);
 };
