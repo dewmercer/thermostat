@@ -4,6 +4,9 @@
 
 
 class MainDisplay: public Display{
+    private:
+        rectangle rectCurrentTemp;
+        rectangle rectSetPoint;
 
     public:
         MainDisplay();
@@ -12,5 +15,5 @@ class MainDisplay: public Display{
         virtual void makeActive();
         virtual void makeInactive();
 
-        void writeTemp(const float temp) const;
+        void writeTemp(const float temp);
 };

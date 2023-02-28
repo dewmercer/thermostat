@@ -114,3 +114,13 @@ void Display::acquireScreen() {
 void Display::releaseScreen() {
     xSemaphoreGive(__display_mutex);
 }
+
+void Display::fillRect(const rectangle rect, const uint16_t color) const {
+    getDisplay()->fillRect(rect.x, rect.y, rect.w, rect.y, color);
+}
+
+rectangle Display::getNewBounds(const char * buffer, const int16_t x, const int16_t y) const {
+    rectangle newBounds;
+    getDisplay()->getTextBounds(buffer, x, y, &newBounds.x, &newBounds.y, &newBounds.w, &newBounds.h);
+    return newBounds;
+}
