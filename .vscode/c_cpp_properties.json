@@ -3,29 +3,29 @@
         {
             "name": "ESP-IDF",
             "compilerPath": "/Users/dmercer/.espressif/tools/riscv32-esp-elf/esp-2022r1-11.2.0/riscv32-esp-elf/bin/riscv32-esp-elf-gcc",
-            "cStandard": "c11",
+            "cStandard": "c17",
             "cppStandard": "c++17",
+            "intelliSenseMode": "macos-gcc-x64",
             "includePath": [
-                "${config:idf.espIdfPath}/components",
                 "${config:idf.espIdfPath}/components/**",
-                "${config:idf.espIdfPath}/managed_components",
                 "${config:idf.espIdfPath}/managed_components/**",
-                "${workspaceFolder}",
                 "${workspaceFolder}/**"
             ],
             "browse": {
                 "path": [
                     "${config:idf.espIdfPath}/components",
-                    "${config:idf.espIdfPath}/components/**",
                     "${config:idf.espIdfPath}/managed_components",
-                    "${config:idf.espIdfPath}/managed_components/**",
-                    "${workspaceFolder}",
-                    "${workspaceFolder}/**"
+                    "${workspaceFolder}/main"
                 ],
                 "limitSymbolsToIncludedHeaders": false
             },
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+            ],
             "compileCommands": "${workspaceFolder}/build/compile_commands.json",
-            "configurationProvider": "ms-vscode.makefile-tools"
+            "configurationProvider": "ms-vscode.cpptools"
         }
     ],
     "version": 4
