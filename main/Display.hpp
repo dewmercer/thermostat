@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.hpp"
+#include <map>
 
 #include "driver/gpio.h"
 #include"esp_timer.h"
@@ -22,6 +23,7 @@
         acquireScreen();      \
         if (isActive)         \
         {
+
 #define RELEASE_ACTIVE_SCREEN \
     releaseScreen();   \
     }                  \
@@ -29,6 +31,7 @@
 
 typedef enum
 {
+    UNKNOWN_MODE,
     MAIN_DISPLAY
 } display_mode_t;
 
@@ -41,45 +44,44 @@ typedef struct {
 
 class Display : public Component
 {
-private:
-protected:
-    const display_mode_t mode;
-    bool isActive;
+    protected:
+        const display_mode_t mode;
+        bool isActive = false;
 
-    static Adafruit_SSD1351 *getDisplay();
+        static Adafruit_SSD1351 *getDisplay();
 
-    static void acquireScreen();
-    static void releaseScreen();
+        static void acquireScreen();
+        static void releaseScreen();
 
-public:
-    Display(const display_mode_t mode);
-    virtual ~Display();
+    public:
+        Display(const display_mode_t mode);
+        virtual ~Display();
 
-public:
-    virtual void makeActive();
-    virtual void makeInactive();
+    public:
+        virtual void makeActive();
+        virtual void makeInactive();
 
-    static void fillRect(const rectangle rect, const uint16_t color);
+        static void fillRect(const rectangle rect, const uint16_t color);
 
-    static rectangle getNewBounds(const char * buffer, const int16_t x, const int16_t y);
+        static rectangle getNewBounds(const char *buffer, const int16_t x, const int16_t y);
 
-    static void init(gpio_num_t cs_pin,
-                     gpio_num_t dc_pin,
-                     gpio_num_t mosi_pin,
-                     gpio_num_t sclk_pin,
-                     gpio_num_t rst_pin,
-                     uint32_t timeoutSeconds);
+        static void init(gpio_num_t cs_pin,
+                         gpio_num_t dc_pin,
+                         gpio_num_t mosi_pin,
+                         gpio_num_t sclk_pin,
+                         gpio_num_t rst_pin,
+                         uint32_t timeoutSeconds);
 
-    static Display *getDisplay(const display_mode_t mode);
+        static Display *getDisplay(const display_mode_t mode);
 
-    static void resetDimTimeout();
-    static void resetDimTimeout(const void *) { resetDimTimeout(); };
+        static void resetDimTimeout();
+        static void resetDimTimeout(const void *) { resetDimTimeout(); };
 
-    static void on();
-    static void on(const void *) { on(); };
+        static void on();
+        static void on(const void *) { on(); };
 
-    static void off();
-    static void off(void *) { off(); };
+        static void off();
+        static void off(void *) { off(); };
 
-    static void prepForPrint(const int16_t x, const int16_t y, const GFXfont *font, const uint16_t color);
+        static void prepForPrint(const int16_t x, const int16_t y, const GFXfont *font, const uint16_t color);
 };

@@ -85,8 +85,9 @@ Adafruit_SSD1351 *tft;
     {
     // tft = new Adafruit_SSD1351(SCREEN_WIDTH, SCREEN_HEIGHT, CS_PIN, DC_PIN, MOSI_PIN, SCLK_PIN, RST_PIN);
 
-    MainDisplay *disp = new MainDisplay();
     Display::init(CS_PIN, DC_PIN, MOSI_PIN, SCLK_PIN, RST_PIN, 10);
+    MainDisplay *disp = new MainDisplay();
+
     disp->makeActive();
 
     // tft->begin();

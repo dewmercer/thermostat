@@ -15,23 +15,25 @@
 #define SETPOINT_FONT FreeSansOblique12pt7b
 
 MainDisplay::MainDisplay()
-    : Display(MAIN_DISPLAY),
-    rectCurrentTemp(rectangle{0,0,0,0}),
-    rectSetPoint(rectangle{0,0,0,0})
-{}
+    : Display(MAIN_DISPLAY)
+{
+}
 
 MainDisplay::~MainDisplay() {}
 void MainDisplay::makeActive()
 {
     Display::makeActive();
+    writeTemp(lastTemp);
+    writeSetPoint(lastSetpoint);
 }
 void MainDisplay::makeInactive()
 {
     Display::makeInactive();
 }
 
-void MainDisplay::writeTemp(const float temp) 
+void MainDisplay::writeTemp(const float temp)
 {
+    lastTemp = temp;
     ACQUIRE_ACTIVE_SCREEN
     prepForPrint(TEMP_POSITION_X, TEMP_POSITION_Y, &TEMP_FONT, TEMP_COLOR);
     fillRect(rectCurrentTemp, BACKGROUND_COLOR);
@@ -42,8 +44,9 @@ void MainDisplay::writeTemp(const float temp)
     RELEASE_ACTIVE_SCREEN
 }
 
-void MainDisplay::writeSetPoint(const int setpoint){
-
+void MainDisplay::writeSetPoint(const int setpoint)
+{
+    lastSetpoint = setpoint;
     ACQUIRE_ACTIVE_SCREEN
     prepForPrint(SETPOINT_POSITION_X, SETPOINT_POSITION_Y, &SETPOINT_FONT, SETPOINT_COLOR);
     fillRect(rectSetPoint, BACKGROUND_COLOR);

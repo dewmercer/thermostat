@@ -1,6 +1,5 @@
 #include "Display.hpp"
-
-#include <map>
+#include <mutex>
 
 #include "esp_err.h"
 #include "esp_log.h"
@@ -14,9 +13,10 @@
 static Adafruit_SSD1351 *display;
 static SemaphoreHandle_t __display_mutex = xSemaphoreCreateMutex();
 static bool __display_initialized = false;
-static std::map<display_mode_t, Display *> modeToDisplayMap;
 static uint32_t dimTimeoutSeconds;
 static esp_timer_handle_t dimTimer;
+static std::map<display_mode_t, Display *> modeToDisplayMap;
+static display_mode_t activeMode;
 
 #define SLEEP_IN (uint8_t)0xAE
 #define SLEEP_OUT (uint8_t)0xAF
@@ -24,7 +24,7 @@ static esp_timer_handle_t dimTimer;
 #define ENHANCE_DIAPLAY (uint8_t)0xA4
 
 static const char *TAG = "Display";
-
+static bool isOn = false;
 Adafruit_SSD1351 *Display::getDisplay()
 {
     return display;
@@ -42,9 +42,25 @@ Display::~Display(){};
 
 void Display::makeActive()
 {
-    isActive = true;
-    Display::on();
+    if (!isActive)
+    {
+        xSemaphoreTake(__display_mutex, portMAX_DELAY);
+        if (!isActive)
+        {
+            ESP_LOGI(TAG, "enter makeActive");
+            if (activeMode != UNKNOWN_MODE)
+            {
+                modeToDisplayMap[activeMode]->makeInactive();
+            }
+            activeMode = mode;
+            isActive = true;
+        }
+        xSemaphoreGive(__display_mutex);
+        Display::on();
+        ESP_LOGI(TAG, "exit makeActive");
+    }
 }
+
 
 void Display::makeInactive()
 {
@@ -63,12 +79,13 @@ void Display::init(gpio_num_t cs_pin,
         acquireScreen();
         if (!__display_initialized)
         {
+            activeMode = UNKNOWN_MODE;
             dimTimeoutSeconds = timeoutSeconds;
             display = new Adafruit_SSD1351(SCREEN_WIDTH, SCREEN_HEIGHT, (int8_t)cs_pin, (int8_t)dc_pin, (int8_t)mosi_pin, (int8_t)sclk_pin, (int8_t)rst_pin);
             display->begin();
             uint8_t displayEnhancement[3] = {ENHANCE_DIAPLAY, 0x00, 0x00};
             display->sendCommand(DISPLAY_ENHANCEMENT, displayEnhancement, sizeof(displayEnhancement));
-/**
+
             esp_timer_create_args_t timerCreateArgs = {
                 .callback = off,
                 .arg = NULL,
@@ -78,7 +95,7 @@ void Display::init(gpio_num_t cs_pin,
 
             ESP_ERROR_CHECK_WITHOUT_ABORT(esp_timer_create(&timerCreateArgs, &dimTimer));
             ESP_ERROR_CHECK_WITHOUT_ABORT(esp_timer_start_periodic(dimTimer, dimTimeoutSeconds * 1000 * 1000));
-   */         __display_initialized = true;
+            __display_initialized = true;
         }
         releaseScreen();
     }
@@ -97,18 +114,34 @@ void Display::resetDimTimeout()
 
 void Display::on()
 {
-    acquireScreen();
-    display->sendCommand(SLEEP_OUT);
+    if (!isOn)
+    {
+        ESP_LOGI(TAG, "enter on");
+        acquireScreen();
+        if (!isOn)
+        {
+            display->sendCommand(SLEEP_OUT);
+            display->fillScreen(WHITE);
+            isOn = true;
+        }
+        releaseScreen();
+        ESP_LOGI(TAG, "exit on");
+    }
     Display::resetDimTimeout();
-    display->fillScreen(WHITE);
-    releaseScreen();
 }
 
 void Display::off()
 {
-    acquireScreen();
-    display->sendCommand(SLEEP_IN);
-    releaseScreen();
+    if (isOn)
+    {
+        acquireScreen();
+        if (isOn)
+        {
+            display->sendCommand(SLEEP_IN);
+            isOn = false;
+        }
+        releaseScreen();
+    }
 }
 
 void Display::acquireScreen()
