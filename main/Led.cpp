@@ -40,7 +40,7 @@ bool Led::getState() const
 void Led::flash(const int flashDelay)
 {
     toggle();
-    vTaskDelay((TickType_t)((float)flashDelay / (float)portTICK_PERIOD_MS));
+    vTaskDelay(pdMS_TO_TICKS(flashDelay));
     toggle();
 }
 
@@ -49,6 +49,6 @@ void Led::flashNTimes(const int n, const int flashDelay)
     for (int i = 0; i < n; ++i)
     {
         flash(flashDelay);
-        vTaskDelay((TickType_t)((float)flashDelay / (float)portTICK_PERIOD_MS));
+        vTaskDelay(pdMS_TO_TICKS(flashDelay));
     }
 }
