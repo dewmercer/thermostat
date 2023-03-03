@@ -21,7 +21,6 @@
 
 static QueueHandle_t __button_isr_event_queue = nullptr;
 
-static const char *ISR_TAG = "Button ButtonIsr";
 static const char *BUTTON_ACTION_HANDLER_TAG = "ButtonActionHandler";
 
 class ButtonISRHandlers
@@ -32,6 +31,7 @@ public:
 private:
   static void IRAM_ATTR ButtonIsr(Button *button)
   {
+    button->setIsrReceivedAtNow();
     xQueueSendFromISR(__button_isr_event_queue, &button, NULL);
   }
 
