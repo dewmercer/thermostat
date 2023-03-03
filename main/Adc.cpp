@@ -65,6 +65,7 @@ static void __init_adc()
                 ESP_LOGE(ADC_TAG, "Invalid arg");
                 break;
             }
+            __adc_initialized = true;
         }
         xSemaphoreGive(__adc_initialization_mutex);
     }
