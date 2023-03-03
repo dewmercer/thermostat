@@ -46,7 +46,11 @@
         "limits": "cpp",
         "numbers": "cpp",
         "stdexcept": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "atomic": "cpp",
+        "future": "cpp",
+        "*.ipp": "cpp",
+        "*.inc": "cpp"
     },
     "idf.adapterTargetName": "esp32c3",
     "idf.port": "/dev/cu.usbmodem212101",

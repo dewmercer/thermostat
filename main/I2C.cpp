@@ -58,7 +58,7 @@ static void __init_i2c()
     }
 }
 
-I2C::I2C(const thermostat_component_id_t component, const uint8_t addr)
+I2C::I2C(const component_id_t component, const uint8_t addr)
     : Component(component),
       _addr(addr)
 {

@@ -1,4 +1,4 @@
-#include "MainDisplay.hpp"
+#include "MainDisplayMode.hpp"
 #include "Fonts/FreeSerifBoldItalic18pt7b.h"
 #include "Fonts/FreeSansOblique12pt7b.h"
 
@@ -14,24 +14,16 @@
 #define SETPOINT_POSITION_Y 30
 #define SETPOINT_FONT FreeSansOblique12pt7b
 
-MainDisplay::MainDisplay()
-    : Display(MAIN_DISPLAY)
+static const char *TAG = "MainDisplayMode";
+
+MainDisplayMode::MainDisplayMode()
+    : DisplayMode(MAIN_DISPLAY_MODE)
 {
 }
 
-MainDisplay::~MainDisplay() {}
-void MainDisplay::makeActive()
-{
-    Display::makeActive();
-    writeTemp(lastTemp);
-    writeSetPoint(lastSetpoint);
-}
-void MainDisplay::makeInactive()
-{
-    Display::makeInactive();
-}
+MainDisplayMode::~MainDisplayMode() {}
 
-void MainDisplay::writeTemp(const float temp)
+void MainDisplayMode::writeTemp(const float temp)
 {
     lastTemp = temp;
     ACQUIRE_ACTIVE_SCREEN
@@ -40,11 +32,11 @@ void MainDisplay::writeTemp(const float temp)
     char buffer[4] = {0};
     sprintf(buffer, "%.1f", temp);
     rectCurrentTemp = getNewBounds(buffer, TEMP_POSITION_X, TEMP_POSITION_Y);
-    getDisplay()->printf(buffer);
+    getOled()->printf(buffer);
     RELEASE_ACTIVE_SCREEN
 }
 
-void MainDisplay::writeSetPoint(const int setpoint)
+void MainDisplayMode::writeSetPoint(const int setpoint)
 {
     lastSetpoint = setpoint;
     ACQUIRE_ACTIVE_SCREEN
@@ -53,6 +45,6 @@ void MainDisplay::writeSetPoint(const int setpoint)
     char buffer[4] = {0};
     sprintf(buffer, "%d", setpoint);
     rectSetPoint = getNewBounds(buffer, SETPOINT_POSITION_X, SETPOINT_POSITION_Y);
-    getDisplay()->printf(buffer);
+    getOled()->printf(buffer);
     RELEASE_ACTIVE_SCREEN
 }

@@ -12,7 +12,7 @@ private:
     bool _currentState = false;
 
 public:
-    Led(const thermostat_component_id_t id, const gpio_num_t pin, const bool onState = true);
+    Led(const component_id_t id, const gpio_num_t pin, const bool onState = true);
     void on();
     void off();
     void toggle();

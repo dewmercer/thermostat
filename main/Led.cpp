@@ -4,7 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-Led::Led(const thermostat_component_id_t id, const gpio_num_t pin, const bool onState)
+Led::Led(const component_id_t id, const gpio_num_t pin, const bool onState)
     : Component(id),
     _pin(pin), 
     _onState(onState), 

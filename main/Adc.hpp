@@ -11,7 +11,7 @@ private:
     uint16_t _dMax;
 
 public:
-    Adc(const thermostat_component_id_t id, const adc1_channel_t channel);
+    Adc(const component_id_t id, const adc1_channel_t channel);
     ~Adc();
 
     uint32_t getRaw() const;

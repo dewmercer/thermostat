@@ -21,7 +21,7 @@ static const char *THERMISTOR_TAG = "THERMISTOR";
 
 void __init_thermistor() {}
 
-Thermistor::Thermistor(const thermostat_component_id_t id, const ThermistorConfig &config, const Adc *adc)
+Thermistor::Thermistor(const component_id_t id, const ThermistorConfig &config, const Adc *adc)
     : Component(id),
       _adc(adc)
 {

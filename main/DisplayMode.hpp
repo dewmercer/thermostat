@@ -4,7 +4,7 @@
 #include <map>
 
 #include "driver/gpio.h"
-#include"esp_timer.h"
+#include "esp_timer.h"
 
 #include "Adafruit_SSD1351.h"
 
@@ -25,41 +25,36 @@
         {
 
 #define RELEASE_ACTIVE_SCREEN \
-    releaseScreen();   \
-    }                  \
+    releaseScreen();          \
+    }                         \
     }
 
-typedef enum
+typedef struct
 {
-    UNKNOWN_MODE,
-    MAIN_DISPLAY
-} display_mode_t;
-
-typedef struct {
     int16_t x;
     int16_t y;
     uint16_t w;
     uint16_t h;
 } rectangle;
 
-class Display : public Component
+class DisplayMode : public Component
 {
+    private:
+        void makeInactive();
+
+
     protected:
-        const display_mode_t mode;
         bool isActive = false;
 
-        static Adafruit_SSD1351 *getDisplay();
 
+        static Adafruit_SSD1351 *getOled();
         static void acquireScreen();
         static void releaseScreen();
 
     public:
-        Display(const display_mode_t mode);
-        virtual ~Display();
-
-    public:
+        DisplayMode(const component_id_t mode);
+        virtual ~DisplayMode();
         virtual void makeActive();
-        virtual void makeInactive();
 
         static void fillRect(const rectangle rect, const uint16_t color);
 
@@ -72,7 +67,7 @@ class Display : public Component
                          gpio_num_t rst_pin,
                          uint32_t timeoutSeconds);
 
-        static Display *getDisplay(const display_mode_t mode);
+        static DisplayMode *getActiveMode();
 
         static void resetDimTimeout();
         static void resetDimTimeout(const void *) { resetDimTimeout(); };

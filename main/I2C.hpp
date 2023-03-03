@@ -6,7 +6,7 @@ class I2C: public Component{
         const uint8_t _addr;
 
     public:
-        I2C(const thermostat_component_id_t component, const uint8_t addr);
+        I2C(const component_id_t component, const uint8_t addr);
         ~I2C();
 
         void write(const uint8_t data) const;

@@ -25,7 +25,7 @@ private:
 public:
   friend class ButtonISRHandlers;
 
-  Button(const thermostat_component_id_t id, const gpio_num_t pin, const uint8_t pressedState, const pButtonHandler handler);
+  Button(const component_id_t id, const gpio_num_t pin, const uint8_t pressedState, const pButtonHandler handler);
   ~Button();
 
   void replaceHandler(const pButtonHandler handler);

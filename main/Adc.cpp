@@ -71,7 +71,7 @@ static void __init_adc()
     }
 }
 
-Adc::Adc(thermostat_component_id_t id, adc1_channel_t channel)
+Adc::Adc(component_id_t id, adc1_channel_t channel)
     : Component(id),
       _channel(channel),
       _dMax((float)pow(2, (int)ADC_WIDTH) - 1.0)

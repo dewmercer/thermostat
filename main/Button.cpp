@@ -58,7 +58,7 @@ static const char *BUTTON_TAG = "Button";
 static bool __button_isr_initialized = false;
 static SemaphoreHandle_t __button_isr_initialization_mutex = xSemaphoreCreateMutex();
 
-Button::Button(thermostat_component_id_t id, gpio_num_t pin, uint8_t pressedState, pButtonHandler handler)
+Button::Button(component_id_t id, gpio_num_t pin, uint8_t pressedState, pButtonHandler handler)
     : Component(id),
       ISRServiceable(),
       _pin(pin),

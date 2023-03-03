@@ -20,8 +20,8 @@ private:
     const Adc *_adc;
 
 public:
-    Thermistor(const thermostat_component_id_t id, const ThermistorConfig &config, const Adc *adc);
-    Thermistor(const thermostat_component_id_t id, const pThermistorConfig config, const Adc *adc)
+    Thermistor(const component_id_t id, const ThermistorConfig &config, const Adc *adc);
+    Thermistor(const component_id_t id, const pThermistorConfig config, const Adc *adc)
         : Thermistor(id, *config, adc){};
     ~Thermistor();
 

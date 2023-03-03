@@ -20,8 +20,10 @@
 
 #include "Adafruit_GFX.h"
 #include "Adafruit_SSD1351.h"
-#include "Display.hpp"
-#include "MainDisplay.hpp"
+#include "DisplayMode.hpp"
+#include "MainDisplayMode.hpp"
+
+#define INITIAL_SETPOINT 20
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 128
@@ -31,7 +33,6 @@
 #define DC_PIN (gpio_num_t)5
 #define CS_PIN (gpio_num_t)21
 #define RST_PIN (gpio_num_t)4
-
 
 #ifdef __GNUC__
 #define USED __attribute__((used))
@@ -48,14 +49,15 @@ static int counter8 = 0;
 static void buttonHandler_6(Button *button)
 {
     ESP_LOGI(BUTTON_HANDLER_TAG, "Handeling button id: %u, %d", button->id(), ++counter8);
-    Display::on();
+    DisplayMode::getActiveMode()->makeActive();
+    DisplayMode::on();
 }
 
 static int counter20 = 0;
 static void buttonHandler_7(Button *button)
 {
     ESP_LOGI(BUTTON_HANDLER_TAG, "Handeling button id: %u, %d", button->id(), ++counter20);
-    Display::off();
+    DisplayMode::off();
 }
 
 void lcdTestPattern(void);
@@ -63,9 +65,8 @@ Adafruit_SSD1351 *tft;
 
 extern "C" void app_main(void)
 {
-    Display::init(CS_PIN, DC_PIN, MOSI_PIN, SCLK_PIN, RST_PIN, 10);
-    MainDisplay *disp = new MainDisplay();
-
+    DisplayMode::init(CS_PIN, DC_PIN, MOSI_PIN, SCLK_PIN, RST_PIN, 10);
+    MainDisplayMode *disp = new MainDisplayMode();
     disp->makeActive();
 
     auto adc1 = new Adc(ADC_0, ADC1_CHANNEL_2);
@@ -82,15 +83,25 @@ extern "C" void app_main(void)
 
     disp->on();
 
-    int counter = 0;
+    int setPoint = INITIAL_SETPOINT;
+    int lastSetpoint = 0;
+    int lastTempX10 = 0;
     while (1)
     {
-        auto temp1 = t1.getTemperature();
-        disp->writeTemp(temp1);
-        disp->writeSetPoint(counter);
+        auto currentTemp = t1.getTemperature();
+        if ((int)(currentTemp * 10) != lastTempX10)
+        {
+            lastTempX10 = (int)(currentTemp * 10);
+            disp->writeTemp(currentTemp);
+        }
+
+        if (setPoint != lastSetpoint)
+        {
+            lastSetpoint = setPoint;
+            disp->writeSetPoint(setPoint);
+        }
 
         vTaskDelay(pdMS_TO_TICKS(1000));
         led.flashNTimes(2, 100);
-        counter = (counter + 1) % 100;
     }
 }

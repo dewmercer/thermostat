@@ -19,24 +19,25 @@ typedef enum
     THERMISTOR_100K,
     SENSOR_AM2320,
     DISPLAY_LCD,
-    DISPLAY_MAIN
-} thermostat_component_id_t;
+    MAIN_DISPLAY_MODE,
+    NULL_DISPLAY_MODE,
+} component_id_t;
 
-class Component{
-    private:
-        const thermostat_component_id_t _id;
+class Component
+{
+private:
+    const component_id_t _id;
 
-    public:
-        Component(const thermostat_component_id_t id);
-        ~Component();
+public:
+    Component(const component_id_t id);
+    ~Component();
 
-        thermostat_component_id_t id() const;
+    component_id_t id() const;
 
-        static bool
-        registered(const thermostat_component_id_t id);
-        static Component *get(const thermostat_component_id_t id);
+    static bool registered(const component_id_t id);
+    static Component *getComponent(const component_id_t id);
 
-    private:
-        static bool add(const thermostat_component_id_t id, Component *component);
-        static void remove(const thermostat_component_id_t id);
+private:
+    static void add(const component_id_t id, Component *component);
+    static void remove(const component_id_t id);
 };
