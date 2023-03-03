@@ -89,7 +89,7 @@ extern "C" void app_main(void)
         disp->writeTemp(temp1);
         disp->writeSetPoint(counter);
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(pdMS_TO_TICKS(1000));
         led.flashNTimes(2, 100);
         counter = (counter + 1) % 100;
     }
