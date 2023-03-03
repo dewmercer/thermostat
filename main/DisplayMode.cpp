@@ -118,7 +118,6 @@ void DisplayMode::on()
         ESP_LOGI(TAG, "exit on");
     }
     DisplayMode::resetDimTimeout();
-    getActiveMode()->refresh();
 }
 
 void DisplayMode::off()
