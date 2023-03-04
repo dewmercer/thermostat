@@ -22,6 +22,8 @@
 #include "Adafruit_SSD1351.h"
 #include "DisplayMode.hpp"
 #include "MainDisplayMode.hpp"
+#include "Display.hpp"
+#include "Ssd1351.hpp"
 
 #define INITIAL_SETPOINT 20
 
@@ -62,6 +64,8 @@ static void buttonHandler_7(Button *button)
 
 void lcdTestPattern(void);
 Adafruit_SSD1351 *tft;
+
+Ssd1351 ssd1351(10, CS_PIN, DC_PIN, RST_PIN);
 
 extern "C" void app_main(void)
 {
