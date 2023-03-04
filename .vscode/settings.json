@@ -52,7 +52,8 @@
         "*.ipp": "cpp",
         "*.inc": "cpp",
         "mutex": "cpp",
-        "condition_variable": "cpp"
+        "condition_variable": "cpp",
+        "unordered_set": "cpp"
     },
     "idf.adapterTargetName": "esp32c3",
     "idf.port": "/dev/cu.usbmodem212101",
