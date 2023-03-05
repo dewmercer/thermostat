@@ -14,12 +14,16 @@ Display::Display(int16_t timeoutSeconds)
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_timer_start_periodic(dimTimer, timeoutSeconds * 1000 * 1000));
 };
 
-void Display::resetSleepTimer() {
+void Display::resetSleepTimer() const {
     xSemaphoreTakeRecursive(displayMutex, portMAX_DELAY);
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_timer_stop(dimTimer));
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_timer_start_periodic(dimTimer, timeoutSeconds * 1000 * 1000));
     xSemaphoreGiveRecursive(displayMutex);
 };
+
+void resetSleepTimer(void *display){
+    ((Display *)display)->resetSleepTimer();
+}
 
 void Display::wakeup(void *display)
 {
